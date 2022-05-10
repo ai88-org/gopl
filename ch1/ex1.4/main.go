@@ -35,7 +35,9 @@ func main() {
 
 func countLines(file *os.File, counts map[string]map[string]int, fileName string) {
 	scanner := bufio.NewScanner(file)
+	countPart := make(map[string]int)
 	for scanner.Scan() {
-		counts[fileName][scanner.Text()]++
+		countPart[scanner.Text()]++
 	}
+	counts[fileName] = countPart
 }
