@@ -2,12 +2,23 @@ package main
 
 import "fmt"
 
+type Celsius float64
+type Fahrenheit float64
+
 func main() {
-	// new 创建了匿名变量，返回的是指针类型，初始化并给变量赋0值
-	fmt.Println(6 % 12)
+	c := FToC(212)
+	fmt.Println(c.String()) // 100°C
+	fmt.Printf("%v\n", c)   // 100°C
+	fmt.Printf("%s\n", c)   // 100°C ; 没有显示调用String()
+	fmt.Println(c)          // 100°C
+	fmt.Printf("%g\n", c)   // 100
+	fmt.Println(float64(c)) // 100
 }
 
-func incr(p *int) int {
-	*p++
-	return *p
+func FToC(f Fahrenheit) Celsius {
+	return Celsius(f-32) * 5 / 9
+}
+
+func (c Celsius) String() string {
+	return fmt.Sprintf("%g°C", c)
 }
