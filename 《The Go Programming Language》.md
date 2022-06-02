@@ -89,5 +89,11 @@ func (c Celsius) String() string {
 
 ```
 
+### 2.6 包和文件
+
+go语言中的包和其他语言中的库、模块的作用一样：支持模块化、封装、单独编译以及代码重用。包里面的源码文件保存在一个或者多个以`.go`为后缀名的文件中。通常保存在以导入路径结尾的目录中。例如`gopl.io/ch1/helloworld`包存放在目录`$GOPATH/src/gopl.io/ch1/helloworld`里面。
+
+
+
 
 
