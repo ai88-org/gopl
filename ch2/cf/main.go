@@ -18,5 +18,4 @@ func main() {
 		c := tempconv.Celsius(t)
 		fmt.Printf("%s=%s,%s=%s\n", f, tempconv.FToC(f), c, tempconv.CToF(c))
 	}
-
 }
