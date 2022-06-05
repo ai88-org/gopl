@@ -16,17 +16,23 @@ func init() {
 func main() {
 	f1 := PopCount1
 	f2 := PopCount2
-	TimeConsuming(f1, 13999999) // 236 ns
-	TimeConsuming(f2, 13999999) // 157 ns
-	TimeConsuming(f2, 98765)    // 75 ns
-	TimeConsuming(f1, 98765)    // 92 ns
+	f3 := PopCount2_4
+	f4 := PopCount2_5
+	TimeConsuming(f1, 13999999)
+	TimeConsuming(f2, 13999999)
+	TimeConsuming(f3, 13999999)
+	TimeConsuming(f4, 13999999)
+	TimeConsuming(f1, 98765)
+	TimeConsuming(f2, 98765)
+	TimeConsuming(f3, 98765)
+	TimeConsuming(f4, 98765)
 }
 
 // 计算函数运行时间
 func TimeConsuming(f func(uint64) int, x uint64) {
 	start := time.Now()
 	f(x)
-	fmt.Printf("elapsed: %d ns\n", time.Since(start).Nanoseconds())
+	fmt.Printf("elapsed: %d ns count:= %d\n", time.Since(start).Nanoseconds(), f(x))
 }
 
 func PopCount1(x uint64) int {
@@ -43,6 +49,27 @@ func PopCount2(x uint64) int {
 	var n int
 	for i := 0; i < 8; i++ {
 		n += int(pc[byte(x>>(i*8))])
+	}
+	return n
+}
+
+// 习题2.4的方法
+func PopCount2_4(x uint64) int {
+	n := 0
+	for i := 0; i < 64; i++ {
+		if (x>>(1*i))&1 == 1 {
+			n++
+		}
+	}
+	return n
+}
+
+// 习题2.5的方法
+func PopCount2_5(x uint64) int {
+	var n int
+	for x != 0 {
+		x = x & (x - 1)
+		n++
 	}
 	return n
 }
