@@ -1,18 +1,14 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func main() {
 
-	x := 3
-	fmt.Println(&x)
-	test(x)
+	var runes []rune
+	for _, s := range "Hello, 世界" {
+		runes = append(runes, s)
+	}
 
-}
+	fmt.Printf("%c", runes)
 
-func test(x int) {
-	// 复制了参数，一个新的int类型在内存生成了
-	fmt.Println(&x)
 }
