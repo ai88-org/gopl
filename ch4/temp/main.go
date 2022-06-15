@@ -4,11 +4,13 @@ import "fmt"
 
 func main() {
 
-	var runes []rune
-	for _, s := range "Hello, 世界" {
-		runes = append(runes, s)
-	}
+	var ages2 map[string]int
+	//ages2["carol"] = 21
+	fmt.Println(ages2)
 
-	fmt.Printf("%c", runes)
+	var ages = make(map[string]int)
+	fmt.Println(ages)
+	ages["carol"] = 21
+	fmt.Println(ages)
 
 }
