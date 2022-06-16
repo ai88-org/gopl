@@ -1,99 +1,144 @@
 # 《The Go Programming Language》
 
-## 2 程序结构
+## 8 Goroutines and Channels
 
-### 2.5 类型声明
+### 8.1 Goroutine
 
-像`==`和`<`这样的比较运算符可以比较一个命名类型的变量和一个相同类型的变量，或者有相同底层类型的字面值。不同命名的类型的变量不能比较，哪怕有相同的底层类型。
-
-```go
-// 摄氏温度
-type Celsius float64
-
-// 华氏温度
-type Fahrenheit float64
-
-func main() {
-	// 相同类型的比较
-	var c1 Celsius = 100
-	var c2 Celsius = 100
-	var c3 Celsius = 101
-	fmt.Println(c1 == c2)	// true
-	fmt.Println(c1 < c3)	// true
-	
-	// 与有相同底层类型的字面值比较 这里的100,101会被编译器认为是float64类型
-	fmt.Println(c1 == 100)	// true
-	fmt.Println(c1 < 101)	// true
-	
-	// 不同类型名称不能比较，哪怕底层类型一样，或者说就是底层类型也没用
-	var f1 float64 = 100
-	var f11 Fahrenheit = 100
-	var f2 float64 = 101
-	var f21 Fahrenheit = 101
-	fmt.Println(c1 == f1)	// 编译错误 类型不匹配
-	fmt.Println(c1 == f11)	// 编译错误 类型不匹配
-	fmt.Println(c1 < f2)	// 编译错误 类型不匹配
-	fmt.Println(c1 < f21)	// 编译错误 类型不匹配
-    
-    fmt.Println(c1 == Celsius(f11)) 
-}
-```
-
-注意最后一个例子，它实际上只是类型转换，并没有更改f11的值，只是改了f11的类型。
+当一个程序开始的时候，只有一个goroutine，就是main。
 
 
 
-一个命名的类型可以提供书写的方便，对于float64这类简单类型可能体现不出来，但是我们后面学习的结构体用这种命名类型的方式会简便很多。
-
-
-
-命名的类型也可以为该类型的值定义新的行为，这些新的行为我们称之为类型的方法集，第六章我们会研究，这里稍微了解一下。
-
-
-
-举个例子，下面的函数，Celsius类型的参数在函数名称前面，这就是与Celsius类型关联的方法集。
+使用go关键字调用方法或者函数，该方法或者函数将会在新创建的goroutine中运行，调用语句本身会很快的完成。（这句话对于理解go xx() 的运行非常有帮助！！！）
 
 ```go
-func (c Celsius) String() string {
-	return fmt.Sprintf("%g°C", c)
-}
+f() // 调用函数，等其完成
+go f() // 开启新的goroutine调用f()，不会等待
 ```
 
-许多类型都有这个String()方法，因为这个方法控制了这个类型的值被fmt包下面输出的样式。
+
+
+下面这个例子里面，计算第45个斐波那契数字需要消耗一些时间，就会让小动画存在一点时间，当main goroutine执行完毕之后，程序就结束了。
 
 ```go
 package main
 
-import "fmt"
-
-type Celsius float64
-type Fahrenheit float64
+import (
+	"fmt"
+	"time"
+)
 
 func main() {
-	c := FToC(212)
-	fmt.Println(c.String()) // 100°C
-	fmt.Printf("%v\n", c)   // 100°C
-	fmt.Printf("%s\n", c)   // 100°C ; 没有显示调用String()
-	fmt.Println(c)          // 100°C
-	fmt.Printf("%g\n", c)   // 100
-	fmt.Println(float64(c)) // 100
+	go spinner(100 * time.Millisecond)
+	const n = 45
+	fibN := fib(n)
+	fmt.Printf("\rFibonacci(%d) = %d\n", n, fibN)
 }
 
-func FToC(f Fahrenheit) Celsius {
-	return Celsius(f-32) * 5 / 9
+func fib(x int) int {
+	if x < 2 {
+		return x
+	}
+
+	return fib(x-1) + fib(x-2)
 }
 
-func (c Celsius) String() string {
-	return fmt.Sprintf("%g°C", c)
+func spinner(delay time.Duration) {
+	for {
+		for _, r := range `-\|/` {
+			fmt.Printf("\r%c", r)
+			time.Sleep(delay)
+		}
+	}
 }
-
 ```
 
-### 2.6 包和文件
-
-go语言中的包和其他语言中的库、模块的作用一样：支持模块化、封装、单独编译以及代码重用。包里面的源码文件保存在一个或者多个以`.go`为后缀名的文件中。通常保存在以导入路径结尾的目录中。例如`gopl.io/ch1/helloworld`包存放在目录`$GOPATH/src/gopl.io/ch1/helloworld`里面。
 
 
+> clock1
+
+```go
+package main
+
+import (
+	"io"
+	"log"
+	"net"
+	"time"
+)
+
+func main() {
+    // 生成listener对象，这个对象监听8000端口，一直阻塞，直到有新的连接访问这个端口
+    // 之后返回这个连接
+	listener, err := net.Listen("tcp", "localhost:8000")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+    // 不断的监听这个端口
+	for {
+        // 阻塞，等待新的连接
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Print(err)
+			continue
+		}
+        // 处理这个连接
+		handleConn(conn)
+	}
+
+}
+
+// 向conn写入时间字符串，一秒钟一次
+func handleConn(c net.Conn) {
+	defer c.Close()
+	for {
+		_, err := io.WriteString(c, time.Now().Format("15:04:05\n"))
+		if err != nil {
+			return // client disconnected
+		}
+		time.Sleep(1 * time.Second)
+	}
+}
+```
 
 
+
+> netcat
+
+```go
+package main
+
+import (
+	"io"
+	"log"
+	"net"
+	"os"
+)
+
+func main() {
+	conn, err := net.Dial("tcp", "localhost:8000")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+    // 把连接输出到标准输出
+	mustCopy(os.Stdout, conn)
+}
+
+func mustCopy(dst io.Writer, src io.Reader) {
+	if _, err := io.Copy(dst, src); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+
+
+netcat1先连接，netcat2后连接，由于是顺序执行，只要netcat1不断开，则netcat2就一直没有机会去连接。
+
+我们只需要再clock1的handleConn方法加一个`go`关键字即可。
+
+`go handleConn`创建了一个goroutine之后，语句立即结束，不会阻塞在这里。
+
+然后就会连接上一个新的conn，也就是netcat2也会被拿到。
 
