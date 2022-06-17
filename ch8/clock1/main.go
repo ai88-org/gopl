@@ -14,12 +14,12 @@ func main() {
 	}
 
 	for {
-		conn, err := listener.Accept()
+		_, err := listener.Accept()
 		if err != nil {
 			log.Print(err)
 			continue
 		}
-		handleConn(conn)
+		//handleConn(conn)
 	}
 
 }

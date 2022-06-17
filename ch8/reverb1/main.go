@@ -16,6 +16,7 @@ func main() {
 	}
 
 	for {
+		// 形成阻塞，直到获取到连接
 		conn, err := listener.Accept()
 		if err != nil {
 			log.Print(err)
@@ -34,9 +35,11 @@ func echo(c net.Conn, shout string, delay time.Duration) {
 }
 
 func handleConn(c net.Conn) {
+	// 获取键盘输入
 	input := bufio.NewScanner(c)
 	for input.Scan() {
-		echo(c, input.Text(), 1*time.Second)
+		// go reverb2
+		go echo(c, input.Text(), 1*time.Second)
 	}
 	c.Close()
 }
